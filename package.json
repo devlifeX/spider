@@ -4,6 +4,7 @@
   "description": "",
   "main": "src/app.ts",
   "scripts": {
+    "lint:fix": "tsc --noEmit && eslint '*/**/*.{js,ts}' --fix",
     "start": "node ./dist/app.js",
     "dev": "nodemon",
     "lint": "eslint . --ext .ts",

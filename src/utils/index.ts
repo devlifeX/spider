@@ -1,6 +1,6 @@
 import translate from "../locale";
 import bcrypt from "bcrypt";
-import { UserSchema, UserForClient } from "../types";
+
 export * from "ramda";
 
 export const hashPassword = (password: string): string => {
@@ -19,14 +19,6 @@ export const isValidMobileNumber = (mobile: string): boolean => {
 };
 
 export const { l, _l } = translate;
-
-export const getUserDataForClient = ({
-  mobile,
-  fullname,
-}: UserSchema): UserForClient => ({
-  mobile,
-  fullname,
-});
 
 export const mergeObjectToClass = (
   object: any | unknown,
