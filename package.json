@@ -65,6 +65,8 @@
     "mongoose": "^5.13.8",
     "ramda": "^0.27.1",
     "random-js": "^2.1.0",
+    "sitemap-urls": "file:../clone/sitemap-urls/sitemap-urls-4.0.0.tgz",
+    "uuid": "^8.3.2",
     "validator": "^13.6.0",
     "winston": "^3.3.3"
   }

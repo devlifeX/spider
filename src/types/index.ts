@@ -17,3 +17,13 @@ export interface CORS {
   origin: string;
   optionsSuccessStatus: number;
 }
+
+export interface getStatusRequest {
+  url: string;
+}
+
+export interface getSitemapRequest {
+  url: string;
+  isRecursive: boolean;
+  isDuplicate: boolean;
+}

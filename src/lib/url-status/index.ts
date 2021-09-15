@@ -1,7 +1,6 @@
 import axios from "axios";
 import * as t from "exectimer";
 import cheerio from "cheerio";
-
 import { splitEvery, flatten } from "ramda";
 
 const seoReport = (html: string) => {
@@ -11,16 +10,28 @@ const seoReport = (html: string) => {
     h1: {
       text: $("h1").text(),
       count: $("h1").length,
+      good: $("h1").length > 0,
     },
     title: {
       text: $("title").text(),
       good: $("title").text().length < 64,
     },
-    description: $("meta[name='description']").attr("content"),
-    hasViewport: $("meta[name='viewport']").length > 0,
-    isIndexable: $("meta[name='robots']").attr("content").includes("index"),
-    hasValidCanonical: $("link[rel='canonical']").attr("href").includes("http"),
-    image: $("meta[property='og:image']").attr("content"),
+    description: {
+      text: $("meta[name='description']").attr("content"),
+      good: $("meta[name='description']").attr("content").length < 128,
+    },
+    viewport: {
+      good: $("meta[name='viewport']").length > 0,
+    },
+    robots: {
+      good: $("meta[name='robots']").attr("content").includes("index"),
+    },
+    canonical: {
+      good: $("link[rel='canonical']").attr("href").includes("http"),
+    },
+    image: {
+      url: $("meta[property='og:image']").attr("content"),
+    },
   };
 };
 
@@ -63,3 +74,12 @@ export const run = async (urls, chunk = 10) => {
     return res;
   });
 };
+
+export const checkUrl = (url) =>
+  axios
+    .get(url)
+    .then((res) =>
+      res.status === 200
+        ? Promise.resolve(url)
+        : Promise.reject("Not valid url")
+    );
