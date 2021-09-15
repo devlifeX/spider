@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-
+import * as path from "path";
 dotenv.config();
 
 import { CORS } from "../types";
@@ -15,4 +15,5 @@ export default {
   connectionString: process.env.CONNECTION_STRING,
   apiSecret: process.env.API_SECRET,
   corsOptions,
+  DIR_SPIDER: path.resolve(__dirname, "../.."),
 };

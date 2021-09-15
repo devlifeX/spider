@@ -4,7 +4,7 @@ module.exports = {
   outDir: "./dist",
   esbuild: {
     minify: false,
-    target: "es2016",
+    target: "es6",
     plugins: [esbuildPluginTsc()],
   },
   assets: {

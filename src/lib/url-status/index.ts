@@ -2,7 +2,7 @@ import axios from "axios";
 import * as t from "exectimer";
 import cheerio from "cheerio";
 import { splitEvery, flatten } from "ramda";
-
+import { main } from "sitemap-urls";
 const seoReport = (html: string) => {
   const $ = cheerio.load(html);
 
@@ -75,11 +75,45 @@ export const run = async (urls, chunk = 10) => {
   });
 };
 
-export const checkUrl = (url) =>
-  axios
+export const checkUrl = (url) => {
+  return axios
     .get(url)
     .then((res) =>
       res.status === 200
-        ? Promise.resolve(url)
+        ? Promise.resolve({ data: res.data, url })
         : Promise.reject("Not valid url")
     );
+};
+
+export const findSitemap = (url) => {
+  const list = ["sitemap.xml", "sitemap_index.xml"];
+  return sitemapCheck(url).then(({ url, valid }) => {
+    if (valid) return Promise.resolve(url);
+
+    const results = list.map((element) => {
+      const newUrl = `${url}/${element}`;
+      return sitemapCheck(newUrl);
+    });
+
+    return Promise.all(results).then((res) => {
+      const validItems = res.filter(({ valid }) => valid);
+      if (validItems.length > 0) {
+        return Promise.resolve(validItems[0].url);
+      } else {
+        return Promise.reject("can not find sitemap at all");
+      }
+    });
+  });
+};
+
+export const sitemapCheck = async (url) => {
+  return checkUrl(url)
+    .then((res) => {
+      return main({
+        sitemapContent: res.data,
+        isRecursive: false,
+        isDuplicate: false,
+      });
+    })
+    .then((result) => Promise.resolve({ url, valid: result.length > 0 }));
+};
