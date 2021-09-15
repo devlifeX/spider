@@ -5,7 +5,7 @@ const registerRoutes = (app: express.Express): void => {
   const publicRouter = express.Router();
   const privateRouter = express.Router();
 
-  publicRouter.post("/otp", getStatus);
+  publicRouter.post("/status", getStatus);
 
   app.use("/ping", ping);
   app.use("/api", publicRouter);
