@@ -9,25 +9,27 @@ const seoReport = (html: string) => {
   return {
     h1: {
       text: $("h1").text(),
-      count: $("h1").length,
-      good: $("h1").length > 0,
+      count: $("h1")?.length,
+      good: $("h1")?.length > 0 || false,
     },
     title: {
       text: $("title").text(),
-      good: $("title").text().length < 64,
+      good: $("title").text()?.length < 64 || false,
     },
     description: {
       text: $("meta[name='description']").attr("content"),
-      good: $("meta[name='description']").attr("content").length < 128,
+      good:
+        $("meta[name='description']").attr("content")?.length < 128 || false,
     },
     viewport: {
-      good: $("meta[name='viewport']").length > 0,
+      good: $("meta[name='viewport']")?.length > 0 || false,
     },
     robots: {
-      good: $("meta[name='robots']").attr("content").includes("index"),
+      good:
+        $("meta[name='robots']").attr("content")?.includes("index") || false,
     },
     canonical: {
-      good: $("link[rel='canonical']").attr("href").includes("http"),
+      good: $("link[rel='canonical']").attr("href")?.includes("http") || false,
     },
     image: {
       url: $("meta[property='og:image']").attr("content"),
@@ -35,11 +37,11 @@ const seoReport = (html: string) => {
   };
 };
 
-const makeHttpCall = async (url: string) => {
+const makeHttpCall = (url: string) => {
   const id = Buffer.from(url).toString("base64");
   const tick = new t.Tick(`makeHttpCall-${id}`);
   tick.start();
-  return await axios.get(url).then((res) => {
+  return axios.get(url).then((res) => {
     const { status, statusText } = res;
 
     const { _currentUrl, _redirectCount, _redirects } =
@@ -63,16 +65,28 @@ const makeHttpCall = async (url: string) => {
   });
 };
 
-export const run = async (urls, chunk = 10) => {
+export const recursiveRun = (urlChunk) => {
+  const result = urlChunk.map(async (url) => await makeHttpCall(url));
+  console.log(result);
+
+  return Promise.all(result);
+};
+
+export const run = (urls, chunk = 10) => {
   const splited: string[][] = splitEvery(chunk, urls);
 
-  const result = splited.map((urlChunk) =>
-    urlChunk.map(async (url) => await makeHttpCall(url))
-  );
+  let output = [];
 
-  return Promise.all(flatten(result)).then((res) => {
-    return res;
-  });
+  for (const urlChunk of splited) {
+    // const result = makeHttpCall(urlChunk[0]).then(console.log);
+    const result = recursiveRun(urlChunk);
+
+    output.push(result);
+  }
+
+  console.log(output);
+
+  return output;
 };
 
 export const checkUrl = (url) => {

@@ -28,12 +28,6 @@ export const getSitemap = (req: Request, res: Response): any => {
       return res.redirect(301, `/api/download?file=${id}`);
     })
     .catch((err) => res.fail(err));
-
-  // run(urls).then((data) => {
-  //   console.log(data);
-
-  //   return res.ok("pong", 200, { data });
-  // });
 };
 
 export const downloadFile = (req: Request, res: Response): any => {

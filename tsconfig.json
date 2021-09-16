@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "esnext",
     "module": "commonjs",
     "pretty": true,
     "sourceMap": true,
@@ -34,7 +34,8 @@
       "es2015.symbol",
       "es2015.symbol.wellknown",
       "esnext.asynciterable",
-      "ES2017"
+      "ES2017",
+      "ESNext"
     ]
   },
   "include": ["./src"]
