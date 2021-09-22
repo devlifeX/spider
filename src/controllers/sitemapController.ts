@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { findSitemap, sitemapCheck } from "../lib/url-status";
 import { pick } from "../utils";
 import { getSitemapRequest } from "../types";
-import { main } from "sitemap-urls";
+import { main } from "../lib/sitemap-xml";
 import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs";
 import config from "../config";

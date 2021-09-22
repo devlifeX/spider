@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { run, checkUrl, findSitemap } from "../lib/url-status";
 import { pick } from "../utils";
 import { getStatusRequest } from "../types";
-import { main } from "sitemap-urls";
+import { main } from "../lib/sitemap-xml";
 
 export const ping = (req: Request, res: Response): any => {
   return res.ok("pong");

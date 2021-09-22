@@ -2,7 +2,7 @@ import axios from "axios";
 import * as t from "exectimer";
 import cheerio from "cheerio";
 import { splitEvery, flatten } from "ramda";
-import { main } from "sitemap-urls";
+import { main } from "../../lib/sitemap-xml";
 const seoReport = (html: string) => {
   const $ = cheerio.load(html);
 
