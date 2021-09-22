@@ -1,3 +1,4 @@
+import { BlobOptions } from "buffer";
 import { Document } from "mongoose";
 
 export interface IResponse {
@@ -19,7 +20,8 @@ export interface CORS {
 }
 
 export interface getStatusRequest {
-  url: string;
+  url?: string;
+  urls?: string[];
 }
 
 export interface getSitemapRequest {

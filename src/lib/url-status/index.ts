@@ -67,26 +67,23 @@ const makeHttpCall = (url: string) => {
 
 export const recursiveRun = (urlChunk) => {
   const result = urlChunk.map(async (url) => await makeHttpCall(url));
-  console.log(result);
-
   return Promise.all(result);
 };
 
-export const run = (urls, chunk = 10) => {
+export const run = (urls, chunk = 1) => {
   const splited: string[][] = splitEvery(chunk, urls);
 
   let output = [];
 
-  for (const urlChunk of splited) {
-    // const result = makeHttpCall(urlChunk[0]).then(console.log);
-    const result = recursiveRun(urlChunk);
+  splited.reduce((acc, urls) => {
+    return acc.then(() => {
+      return recursiveRun(urls).then((results) => {
+        console.log(results);
 
-    output.push(result);
-  }
-
-  console.log(output);
-
-  return output;
+        return output.push(results);
+      });
+    });
+  }, Promise.resolve());
 };
 
 export const checkUrl = (url) => {
