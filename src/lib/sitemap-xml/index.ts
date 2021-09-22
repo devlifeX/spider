@@ -29,18 +29,20 @@ function extractUrls(xml) {
   return urls;
 }
 
-function saveOutput(urlsArray, filename) {
-  process.env.SITEMAP_SAVE_DIR ||
-    console.error("set SITEMAP_SAVE_DIR to env file");
-  const dir = path.resolve(process.env.SITEMAP_SAVE_DIR || __dirname);
-  const file = fs.createWriteStream(`${dir}/${filename}`);
-  file.on("error", function (err) {
-    console.log(`Error: ${err}`);
+async function saveOutput(urlsArray, filename) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(filename);
+    file.on("error", function (err) {
+      console.log(`Error: ${err}`);
+      reject(`Error: ${err}`);
+    });
+    urlsArray.forEach(function (v) {
+      file.write(v + "\n");
+    });
+    console.log(`${urlsArray.length}, items saved at ${filename}`);
+    file.on("close", () => resolve(urlsArray));
+    file.end();
   });
-  urlsArray.forEach(function (v) {
-    file.write(v + "\n");
-  });
-  file.end();
 }
 
 function isURL(str) {
@@ -98,11 +100,10 @@ async function main({
   }
 
   if (filename) {
-    saveOutput(output, filename);
-    console.log(`${output.length}, items saved at ${path.resolve(filename)}`);
+    return saveOutput(output, filename);
+  } else {
+    return output;
   }
-
-  return output;
 }
 
 export { main, isURL };

@@ -1,6 +1,7 @@
 import translate from "../locale";
 import bcrypt from "bcrypt";
-
+import path from "path";
+import fs from "fs";
 export * from "ramda";
 
 export const hashPassword = (password: string): string => {
@@ -28,4 +29,14 @@ export const mergeObjectToClass = (
     cls[item] = object[item];
   }
   return cls;
+};
+
+export const sitemapFullPath = (url) => {
+  process.env.SITEMAP_SAVE_DIR ||
+    console.error("set SITEMAP_SAVE_DIR to env file");
+  const dir = path.resolve(process.env.SITEMAP_SAVE_DIR);
+  const _url = new URL(url);
+  const fullPath = `${dir}/${_url.hostname}/`;
+  if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath);
+  return fullPath;
 };
