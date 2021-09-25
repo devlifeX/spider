@@ -12,6 +12,7 @@ const corsOptions: CORS = {
 export default {
   currentEnv: process.env.NODE_ENV || "development",
   port: process.env.PORT,
+  socketPort: process.env.SOCKET_PORT,
   connectionString: process.env.CONNECTION_STRING,
   apiSecret: process.env.API_SECRET,
   corsOptions,
