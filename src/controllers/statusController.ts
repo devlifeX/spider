@@ -11,7 +11,6 @@ export const ping = (req: Request, res: Response): any => {
 const findSitemapURL = (url) => {
   return findSitemap(url).then((baseURL) =>
     main({
-      isRecursive: true,
       isDuplicate: true,
       baseURL,
     })

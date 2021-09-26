@@ -2,6 +2,8 @@ import cheerio from "cheerio";
 import path from "path";
 import axios from "axios";
 import fs from "fs";
+import { splitEvery } from "ramda";
+
 import { SitemapMain } from "./types";
 
 async function fetchXML(url) {
@@ -29,7 +31,7 @@ function extractUrls(xml) {
   return urls;
 }
 
-async function saveOutput(urlsArray, filename) {
+async function saveOutput(urlsArray: string[], filename) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(filename);
     file.on("error", function (err) {
@@ -59,11 +61,12 @@ function isURL(str) {
 async function main({
   baseURL,
   sitemapContent,
-  isRecursive,
+  basicAuth,
   filename,
   isDuplicate,
-}: SitemapMain) {
-  let output = [];
+  callbackOnEachItemFetched,
+}: SitemapMain): Promise<string[]> {
+  let output: string[] = [];
   let urls = [];
   let xml = null;
 
@@ -75,19 +78,23 @@ async function main({
 
   urls = extractUrls(xml);
 
-  if (isRecursive) {
-    console.log("Doing Recursive... Please wait...");
-    const pendingURLArray = urls.map((url) => isURLXML(url) && fetchXML(url));
-    const newUrls = await axios.all(pendingURLArray).then((responseArr) => {
-      return responseArr.map((xml) => extractUrls(xml));
+  console.log("Doing Recursive... Please wait...");
+  const pendingURLArray = urls.map((url) => isURLXML(url) && fetchXML(url));
+
+  const splited: string[][] = splitEvery(10, urls);
+
+  const newUrls = await axios.all(pendingURLArray).then((responseArr) => {
+    return responseArr.map((xml, index, arr) => {
+      callbackOnEachItemFetched &&
+        callbackOnEachItemFetched({ index, total: arr.length });
+
+      return extractUrls(xml);
     });
-    output = newUrls.reduce((acc, url) => {
-      acc.push(...url);
-      return acc;
-    }, urls);
-  } else {
-    output = urls;
-  }
+  });
+  output = newUrls.reduce((acc, url) => {
+    acc.push(...url);
+    return acc;
+  }, urls);
 
   if (isDuplicate) {
     output = output.reduce(function (acc, url) {
@@ -100,10 +107,10 @@ async function main({
   }
 
   if (filename) {
-    return saveOutput(output, filename);
-  } else {
-    return output;
+    saveOutput(output, filename);
   }
+
+  return output;
 }
 
 export { main, isURL };

@@ -9,32 +9,51 @@ import config from "../config";
 import path from "path";
 import { fileURLToPath } from "url";
 
+const progressbarUpdater = (socket) => (item: any) => {
+  const value = (item.total / 100) * item.index;
+  const output = { value, done: item.index + 1 >= item.total };
+  console.log(item);
+  console.log(output);
+
+  socket.emit("sitemap", output);
+};
+
 export const getSitemap = (socket, props: getSitemapRequest): any => {
-  let value = 0;
+  /* let value = 0;
+  let done = false;
   const t = setInterval(() => {
-    if (value == 100) {
+    console.log(value);
+
+    if (value >= 100) {
+      done = true;
+    }
+    socket.emit("sitemap", { value, done });
+    if (done) {
       return clearInterval(t);
     }
     value++;
-    socket.emit("sitemap", { value });
-  }, 500);
-  /* const id = uuidv4();
+  }, 30); */
+
+  const { url, isDuplicate, basicAuth } = pick([
+    "url",
+    "isDuplicate",
+    "basicAuth",
+  ])(props) as getSitemapRequest;
+
+  const id = uuidv4();
   const timesmap = new Date().getTime();
   const _url = new URL(url);
-  const filename = `${_url.hostname}--${timesmap}--${id}.txt`;
-  const fullPath = `${sitemapFullPath(url)}${filename}`;
 
   findSitemap(url)
     .then((baseURL) =>
       main({
-        isRecursive,
-        filename: fullPath,
         isDuplicate,
         baseURL,
+        basicAuth,
+        callbackOnEachItemFetched: progressbarUpdater(socket),
       })
     )
-    .then(() => {
-      return res.redirect(301, `/api/download?file=${filename}`);
-    })
-    .catch((err) => res.fail(err)); */
+    .catch((err) => {
+      socket.emit("sitemap", { error: { message: "URL issue", err } });
+    });
 };

@@ -24,8 +24,13 @@ export interface getStatusRequest {
   urls?: string[];
 }
 
+interface BasicAuthProps {
+  hasBasicAuth: boolean;
+  basicAuthUsername: string;
+  basicAuthPassword: string;
+}
 export interface getSitemapRequest {
   url: string;
-  isRecursive: boolean;
   isDuplicate: boolean;
+  basicAuth?: BasicAuthProps;
 }

@@ -122,7 +122,6 @@ export const sitemapCheck = async (url) => {
     .then((res) => {
       return main({
         sitemapContent: res.data,
-        isRecursive: false,
         isDuplicate: false,
       });
     })

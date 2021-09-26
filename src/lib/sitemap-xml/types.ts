@@ -1,7 +1,14 @@
+interface BasicAuthProps {
+  hasBasicAuth: boolean;
+  basicAuthUsername: string;
+  basicAuthPassword: string;
+}
+
 export interface SitemapMain {
-  baseURL: string;
+  baseURL?: string;
   filename?: string;
   sitemapContent?: string;
-  isRecursive?: boolean;
+  basicAuth?: BasicAuthProps;
   isDuplicate?: boolean;
+  callbackOnEachItemFetched?: (item: any) => void;
 }
