@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 /**
  * Conreoller include here
  */
-import { getSitemap } from "../socketControllers";
+import { getSitemapController } from "../socketControllers";
 
 const messages = new Set();
 const users = new Map();
@@ -26,7 +26,9 @@ export class Connection {
     /**
      * Register controller
      */
-    socket.on("sitemap", (message) => getSitemap(io.sockets, message));
+    socket.on("sitemap", (message) =>
+      getSitemapController(io.sockets, message)
+    );
 
     /**
      * Other socket functions

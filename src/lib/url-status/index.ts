@@ -2,7 +2,10 @@ import axios from "axios";
 import * as t from "exectimer";
 import cheerio from "cheerio";
 import { splitEvery, flatten } from "ramda";
-import { main } from "../../lib/sitemap-xml";
+import { isValidSitemap } from "../../lib/sitemap-xml";
+
+import { checkURLReturnType } from "./type";
+
 const seoReport = (html: string) => {
   const $ = cheerio.load(html);
 
@@ -86,44 +89,39 @@ export const run = (urls, chunk = 1) => {
   }, Promise.resolve());
 };
 
-export const checkUrl = (url) => {
-  return axios
-    .get(url)
-    .then((res) =>
-      res.status === 200
-        ? Promise.resolve({ data: res.data, url })
-        : Promise.reject("Not valid url")
-    );
-};
-
-export const findSitemap = (url) => {
-  const list = ["sitemap.xml", "sitemap_index.xml"];
-  return sitemapCheck(url).then(({ url, valid }) => {
-    if (valid) return Promise.resolve(url);
-
-    const results = list.map((element) => {
-      const newUrl = `${url}/${element}`;
-      return sitemapCheck(newUrl);
-    });
-
-    return Promise.all(results).then((res) => {
-      const validItems = res.filter(({ valid }) => valid);
-      if (validItems.length > 0) {
-        return Promise.resolve(validItems[0].url);
-      } else {
-        return Promise.reject("can not find sitemap at all");
-      }
-    });
+export const checkUrl = (url): Promise<checkURLReturnType> => {
+  return axios.get(url).then((res) => {
+    if (res.status === 200) {
+      return { data: res.data, url };
+    }
   });
 };
 
-export const sitemapCheck = async (url) => {
-  return checkUrl(url)
-    .then((res) => {
-      return main({
-        sitemapContent: res.data,
-        isDuplicate: false,
-      });
-    })
-    .then((result) => Promise.resolve({ url, valid: result.length > 0 }));
+async function* findSitemap(url) {
+  const list = ["sitemap.xml", "sitemap_index.xml"];
+  const parsedURL = new URL(url);
+
+  for (const slug of list) {
+    try {
+      const _url = `${parsedURL.origin}/${slug}`;
+      const isValid = await isValidSitemap(`${parsedURL.origin}/${slug}`);
+      yield { url: _url, isValid };
+    } catch (error) {
+      yield { url: "", isValid: false };
+    }
+  }
+}
+
+export const getSitemap = async (url): Promise<string> => {
+  const isValidBaseURL = await isValidSitemap(url);
+  if (!isValidBaseURL) {
+    for await (const response of findSitemap(url)) {
+      if (response.isValid) {
+        return response.url;
+      }
+    }
+  } else {
+    return url;
+  }
+  return Promise.reject("can not find url");
 };

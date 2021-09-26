@@ -34,3 +34,10 @@ export interface getSitemapRequest {
   isDuplicate: boolean;
   basicAuth?: BasicAuthProps;
 }
+
+export interface progressbarUpdaterSitemapProps {
+  index: number;
+  total: number;
+  urls: string[];
+  done: boolean;
+}

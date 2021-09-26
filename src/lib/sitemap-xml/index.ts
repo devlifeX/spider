@@ -53,6 +53,11 @@ async function saveOutput(urlsArray: string[], filename) {
   });
 }
 
+export const isValidSitemap = async (url: string): Promise<boolean> => {
+  const xmlContent = await fetchXML(url);
+  return extractUrls(xmlContent).length > 0;
+};
+
 function isURL(str) {
   try {
     const myURL = new URL(str);
@@ -94,6 +99,7 @@ async function main({
     index: 0,
     total: splited.length,
     urls: [...XMLURL, ...notXMLURL],
+    done: false,
   });
 
   let splitedIndex = 1;
@@ -102,10 +108,12 @@ async function main({
     const feed = await Promise.all(result);
     const newURLs = feed.map((i) => extractUrls(i));
     tmp.push(newURLs);
+
     callbackOnEachItemFetched({
       index: splitedIndex,
       total: splited.length,
       urls: flatten(newURLs),
+      done: splitedIndex >= splited.length,
     });
 
     splitedIndex++;
