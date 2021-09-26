@@ -2,7 +2,7 @@ import cheerio from "cheerio";
 import path from "path";
 import axios from "axios";
 import fs from "fs";
-import { splitEvery } from "ramda";
+import { splitEvery, flatten } from "ramda";
 
 import { SitemapMain } from "./types";
 
@@ -11,13 +11,19 @@ async function fetchXML(url) {
   return res.data;
 }
 
+function* xmlLoader(urls: string[][]) {
+  for (const urlPack of urls) {
+    yield urlPack.map((url) => axios(url).then((res) => res.data));
+  }
+}
+
 function isURLXML(url) {
   const ext = path.extname(url);
   return ext.toLocaleLowerCase() === ".xml";
 }
 
 function extractUrls(xml) {
-  const urls = [];
+  const urls: string[] = [];
   const $ = cheerio.load(xml, { xmlMode: true });
 
   $("loc").each(function (_, v) {
@@ -78,30 +84,40 @@ async function main({
 
   urls = extractUrls(xml);
 
-  console.log("Doing Recursive... Please wait...");
-  const pendingURLArray = urls.map((url) => isURLXML(url) && fetchXML(url));
+  console.log(`Doing Recursive... total url in root=${urls.length}`);
+  const XMLURL = urls.filter((url) => isURLXML(url));
+  const notXMLURL = urls.filter((url) => !isURLXML(url));
 
-  const splited: string[][] = splitEvery(10, urls);
+  const splited: string[][] = splitEvery(1, XMLURL);
 
-  const newUrls = await axios.all(pendingURLArray).then((responseArr) => {
-    return responseArr.map((xml, index, arr) => {
-      callbackOnEachItemFetched &&
-        callbackOnEachItemFetched({ index, total: arr.length });
-
-      return extractUrls(xml);
-    });
+  callbackOnEachItemFetched({
+    index: 0,
+    total: splited.length,
+    urls: [...XMLURL, ...notXMLURL],
   });
-  output = newUrls.reduce((acc, url) => {
-    acc.push(...url);
-    return acc;
-  }, urls);
+
+  let splitedIndex = 1;
+  let tmp = [];
+  for (const result of xmlLoader(splited)) {
+    const feed = await Promise.all(result);
+    const newURLs = feed.map((i) => extractUrls(i));
+    tmp.push(newURLs);
+    callbackOnEachItemFetched({
+      index: splitedIndex,
+      total: splited.length,
+      urls: flatten(newURLs),
+    });
+
+    splitedIndex++;
+  }
+  output = flatten(tmp);
+  output = [...notXMLURL, ...output];
 
   if (isDuplicate) {
     output = output.reduce(function (acc, url) {
       if (!acc.includes(url)) {
         acc.push(url);
       }
-
       return acc;
     }, []);
   }
