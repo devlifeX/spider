@@ -15,9 +15,6 @@ connectToDb(config.connectionString).then(() => {
   app.use(failResponseHandler);
   app.use(successResponseHandler);
 
-  // app.listen(config.port, () => {
-  //   console.log(`App listening on the port ${config.port}`);
-  // });
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     cors: {
