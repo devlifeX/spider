@@ -112,8 +112,17 @@ async function* findSitemap(url) {
   }
 }
 
-export const getSitemap = async (url): Promise<string> => {
-  const isValidBaseURL = await isValidSitemap(url);
+const httpsCheckInURL = (url: string) => {
+  if (!url.includes("https://")) {
+    return `https://${url}`;
+  }
+
+  return url;
+};
+
+export const getSitemap = async (url: string): Promise<string> => {
+  const newUrl = httpsCheckInURL(url);
+  const isValidBaseURL = await isValidSitemap(newUrl);
   if (!isValidBaseURL) {
     for await (const response of findSitemap(url)) {
       if (response.isValid) {
@@ -121,7 +130,7 @@ export const getSitemap = async (url): Promise<string> => {
       }
     }
   } else {
-    return url;
+    return newUrl;
   }
   return Promise.reject("can not find url");
 };
