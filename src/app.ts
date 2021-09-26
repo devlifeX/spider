@@ -25,8 +25,8 @@ connectToDb(config.connectionString).then(() => {
       methods: ["GET", "POST"],
     },
   });
-  httpServer.listen(config.socketPort, () => {
-    console.log(`Socket listening on the port ${config.socketPort}`);
+  httpServer.listen(config.port, () => {
+    console.log(`Socket listening on the port ${config.port}`);
     socketConnect(io);
   });
 
