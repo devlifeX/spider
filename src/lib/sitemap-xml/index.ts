@@ -4,40 +4,43 @@ import axios from "axios";
 import fs from "fs";
 import { splitEvery, flatten } from "ramda";
 
-import { SitemapMain } from "./types";
+import { SitemapMain, SitemapResponse } from "./types";
 
-async function fetchXML(url) {
-  const res = await axios(url);
+async function fetchXML(url: SitemapResponse | string) {
+  const finalURL = typeof url === "string" ? url : url.url;
+  const res = await axios(finalURL);
   return res.data;
 }
 
-function* xmlLoader(urls: string[][]) {
+function* xmlLoader(urls: SitemapResponse[][]) {
   for (const urlPack of urls) {
-    yield urlPack.map((url) => axios(url).then((res) => res.data));
+    yield urlPack.map((url) => axios(url.url).then((res) => res.data));
   }
 }
 
-function isURLXML(url) {
-  const ext = path.extname(url);
+function isURLXML(url: SitemapResponse | string) {
+  const finalURL = typeof url === "string" ? url : url.url;
+  const ext = path.extname(finalURL);
   return ext.toLocaleLowerCase() === ".xml";
 }
 
-function extractUrls(xml) {
-  const urls: string[] = [];
+function extractUrls(xml): SitemapResponse[] {
+  const urls: any[] = [];
   const $ = cheerio.load(xml, { xmlMode: true });
 
   $("loc").each(function (_, v) {
     const url = $(v).text();
 
     if (!urls.includes(url)) {
-      urls.push(url);
+      urls.push({ url });
     }
   });
 
   return urls;
 }
 
-async function saveOutput(urlsArray: string[], filename) {
+async function saveOutput(urlsArray: SitemapResponse[], filename) {
+  //TODO : not tested
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(filename);
     file.on("error", function (err) {
@@ -53,7 +56,9 @@ async function saveOutput(urlsArray: string[], filename) {
   });
 }
 
-export const isValidSitemap = async (url: string): Promise<boolean> => {
+export const isValidSitemap = async (
+  url: SitemapResponse
+): Promise<boolean> => {
   const xmlContent = await fetchXML(url);
   return extractUrls(xmlContent).length > 0;
 };
@@ -76,10 +81,12 @@ async function main({
   filename,
   isDuplicate,
   callbackOnEachItemFetched,
-}: SitemapMain): Promise<string[]> {
-  let output: string[] = [];
-  let urls = [];
+}: SitemapMain): Promise<SitemapResponse[]> {
+  let output: SitemapResponse[] = [];
+  let urls: SitemapResponse[] = [];
   let xml = null;
+  const callbackHandler = (props) =>
+    callbackOnEachItemFetched && callbackOnEachItemFetched(props);
 
   if (baseURL) {
     xml = await fetchXML(baseURL);
@@ -93,9 +100,9 @@ async function main({
   const XMLURL = urls.filter((url) => isURLXML(url));
   const notXMLURL = urls.filter((url) => !isURLXML(url));
 
-  const splited: string[][] = splitEvery(1, XMLURL);
+  const splited: SitemapResponse[][] = splitEvery(1, XMLURL);
 
-  callbackOnEachItemFetched({
+  callbackHandler({
     index: 0,
     total: splited.length,
     urls: [...XMLURL, ...notXMLURL],
@@ -109,7 +116,7 @@ async function main({
     const newURLs = feed.map((i) => extractUrls(i));
     tmp.push(newURLs);
 
-    callbackOnEachItemFetched({
+    callbackHandler({
       index: splitedIndex,
       total: splited.length,
       urls: flatten(newURLs),
@@ -119,7 +126,7 @@ async function main({
     splitedIndex++;
   }
   output = flatten(tmp);
-  output = [...notXMLURL, ...output];
+  output = [...XMLURL, ...notXMLURL, ...output];
 
   if (isDuplicate) {
     output = output.reduce(function (acc, url) {

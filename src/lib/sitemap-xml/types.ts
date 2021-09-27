@@ -12,3 +12,7 @@ export interface SitemapMain {
   isDuplicate?: boolean;
   callbackOnEachItemFetched?: (item: any) => void;
 }
+
+export interface SitemapResponse {
+  url: string;
+}
