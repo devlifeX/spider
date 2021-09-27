@@ -113,8 +113,8 @@ async function* findSitemap(url) {
 }
 
 const httpsCheckInURL = (url: string) => {
-  if (!url.includes("https://")) {
-    return `https://${url}`;
+  if (!url.includes("http")) {
+    return `http://${url}`;
   }
 
   return url;
