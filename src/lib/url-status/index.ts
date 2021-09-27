@@ -121,8 +121,8 @@ const httpsCheckInURL = (url: string) => {
 };
 
 export const getSitemap = async (url: string): Promise<string> => {
-  const newUrl = httpsCheckInURL(url);
-  const isValidBaseURL = await isValidSitemap(newUrl);
+  url = httpsCheckInURL(url);
+  const isValidBaseURL = await isValidSitemap(url);
   if (!isValidBaseURL) {
     for await (const response of findSitemap(url)) {
       if (response.isValid) {
@@ -130,7 +130,7 @@ export const getSitemap = async (url: string): Promise<string> => {
       }
     }
   } else {
-    return newUrl;
+    return url;
   }
   return Promise.reject("can not find url");
 };
