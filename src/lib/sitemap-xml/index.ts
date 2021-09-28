@@ -2,6 +2,7 @@ import cheerio from "cheerio";
 import path from "path";
 import axios from "axios";
 import fs from "fs";
+import moment from "moment";
 import { splitEvery, flatten } from "ramda";
 
 import {
@@ -234,4 +235,17 @@ export const getSitemap = async (url: string): Promise<getSitemapResponse> => {
       }
       return response;
     });
+};
+
+export const sitemapTimerHandler = (
+  arr: SitemapResponse[]
+): SitemapResponse[] => {
+  return arr.map((obj) => {
+    moment.locale("fa");
+    const relativeTime = moment(obj.lastmod).fromNow();
+    return {
+      ...obj,
+      relativeTime,
+    };
+  });
 };

@@ -3,7 +3,7 @@ import {
   fixNakedURL,
   isValidSitemap,
   getSitemap,
-  fetchXML,
+  sitemapTimerHandler,
 } from "./index";
 
 jest.setTimeout(30000);
@@ -15,6 +15,14 @@ const NakedURL = "devlife.ir/site.xml";
 const fakeURL = "test";
 const username = "dariush";
 const password = "dariush";
+
+test("Add moment to lastmod", async () => {
+  const results = await main({
+    baseURL: noBasicAuthURL,
+  });
+  const newResults = sitemapTimerHandler(results);
+  expect(newResults[0].relativeTime.length).toBeGreaterThan(3);
+});
 
 test("Main with basic Auth and regular url", async () => {
   const results = await main({

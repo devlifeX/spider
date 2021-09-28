@@ -16,6 +16,7 @@ export interface SitemapMain {
 export interface SitemapResponse {
   url: string;
   lastmod: string;
+  relativeTime?: string;
 }
 
 export interface isValidSitemapResponse {
