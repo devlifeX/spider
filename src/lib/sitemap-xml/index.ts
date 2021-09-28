@@ -56,7 +56,7 @@ function extractUrls(xml): SitemapResponse[] {
       const url = $(v).find("loc").text();
       const lastmod = $(v).find("lastmod").text();
 
-      urls.push({ url, lastmod });
+      urls.push(sitemapTimerHandler({ url, lastmod }));
     });
 
     return urls;
@@ -237,15 +237,11 @@ export const getSitemap = async (url: string): Promise<getSitemapResponse> => {
     });
 };
 
-export const sitemapTimerHandler = (
-  arr: SitemapResponse[]
-): SitemapResponse[] => {
-  return arr.map((obj) => {
-    moment.locale("fa");
-    const relativeTime = moment(obj.lastmod).fromNow();
-    return {
-      ...obj,
-      relativeTime,
-    };
-  });
+export const sitemapTimerHandler = (obj: SitemapResponse): SitemapResponse => {
+  moment.locale("fa");
+  const relativeTime = moment(obj.lastmod).fromNow();
+  return {
+    ...obj,
+    relativeTime,
+  };
 };

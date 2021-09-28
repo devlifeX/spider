@@ -20,8 +20,8 @@ test("Add moment to lastmod", async () => {
   const results = await main({
     baseURL: noBasicAuthURL,
   });
-  const newResults = sitemapTimerHandler(results);
-  expect(newResults[0].relativeTime.length).toBeGreaterThan(3);
+
+  expect(results[0].relativeTime.length).toBeGreaterThan(3);
 });
 
 test("Main with basic Auth and regular url", async () => {
