@@ -26,9 +26,7 @@ export class Connection {
     /**
      * Register controller
      */
-    socket.on("sitemap", (message) =>
-      getSitemapController(io.sockets, message)
-    );
+    socket.on("sitemap", (message) => getSitemapController(socket, message));
 
     /**
      * Other socket functions
