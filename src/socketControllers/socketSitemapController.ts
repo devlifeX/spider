@@ -1,7 +1,6 @@
-import { getSitemap } from "../lib/url-status";
 import { pick } from "../utils";
 import { getSitemapRequest, progressbarUpdaterSitemapProps } from "../types";
-import { main } from "../lib/sitemap-xml";
+import { main, getSitemap } from "../lib/sitemap-xml";
 import { v4 as uuidv4 } from "uuid";
 
 const progressbarUpdater =
@@ -19,7 +18,7 @@ export const getSitemapController = (socket, props: getSitemapRequest): any => {
   ])(props) as getSitemapRequest;
 
   getSitemap(url)
-    .then((baseURL) =>
+    .then(({ url: baseURL, error }) =>
       main({
         isDuplicate,
         baseURL,

@@ -4,12 +4,14 @@ import axios from "axios";
 import fs from "fs";
 import { splitEvery, flatten } from "ramda";
 
-import { SitemapMain, SitemapResponse } from "./types";
+import { SitemapMain, SitemapResponse, isValidSitemapResponse } from "./types";
 
-async function fetchXML(url: SitemapResponse | string) {
+export function fetchXML(url: SitemapResponse | string): Promise<string> {
   const finalURL = typeof url === "string" ? url : url.url;
-  const res = await axios(finalURL);
-  return res.data;
+  return axios
+    .get(finalURL, { timeout: 5000 })
+    .then((res) => res.data)
+    .catch((err) => "");
 }
 
 function* xmlLoader(urls: SitemapResponse[][]) {
@@ -25,18 +27,20 @@ function isURLXML(url: SitemapResponse | string) {
 }
 
 function extractUrls(xml): SitemapResponse[] {
-  const urls: any[] = [];
-  const $ = cheerio.load(xml, { xmlMode: true });
+  try {
+    const urls: SitemapResponse[] = [];
+    const $ = cheerio.load(xml, { xmlMode: true });
 
-  $("loc").each(function (_, v) {
-    const url = $(v).text();
+    $("loc").each(function (_, v) {
+      const url = $(v).text();
 
-    if (!urls.includes(url)) {
       urls.push({ url });
-    }
-  });
+    });
 
-  return urls;
+    return urls;
+  } catch (error) {
+    return [];
+  }
 }
 
 async function saveOutput(urlsArray: SitemapResponse[], filename) {
@@ -56,11 +60,24 @@ async function saveOutput(urlsArray: SitemapResponse[], filename) {
   });
 }
 
-export const isValidSitemap = async (
-  url: SitemapResponse
-): Promise<boolean> => {
-  const xmlContent = await fetchXML(url);
-  return extractUrls(xmlContent).length > 0;
+export const isValidSitemap = (
+  url: SitemapResponse | string
+): Promise<isValidSitemapResponse> => {
+  const finalURL = typeof url === "string" ? url : url.url;
+  let response: isValidSitemapResponse = {
+    fetchError: true,
+    isValidXML: false,
+  };
+
+  return fetchXML(finalURL)
+    .then((str) => {
+      if (str.length <= 0) return response;
+      return {
+        fetchError: false,
+        isValidXML: extractUrls(str).length > 0,
+      };
+    })
+    .catch(() => response);
 };
 
 function isURL(str) {
@@ -74,7 +91,7 @@ function isURL(str) {
   }
 }
 
-async function main({
+export async function main({
   baseURL,
   sitemapContent,
   basicAuth,
@@ -96,7 +113,6 @@ async function main({
 
   urls = extractUrls(xml);
 
-  console.log(`Doing Recursive... total url in root=${urls.length}`);
   const XMLURL = urls.filter((url) => isURLXML(url));
   const notXMLURL = urls.filter((url) => !isURLXML(url));
 
@@ -144,4 +160,60 @@ async function main({
   return output;
 }
 
-export { main, isURL };
+async function* findSitemap(
+  url: string
+): AsyncGenerator<(isValidSitemapResponse & { url: string }) | null> {
+  const list = ["sitemap.xml", "sitemap_index.xml"];
+  const parsedURL = new URL(url);
+
+  for (const slug of list) {
+    try {
+      const _url = `${parsedURL.origin}/${slug}`;
+      const check = await isValidSitemap(`${parsedURL.origin}/${slug}`);
+
+      yield { url: _url, ...check };
+    } catch (error) {
+      yield null;
+    }
+  }
+}
+
+export const fixNakedURL = (url: string) => {
+  if (!url.includes("http")) {
+    return `https://${url}`;
+  }
+
+  return url;
+};
+
+interface getSitemapResponse {
+  url: string;
+  error?: boolean;
+}
+export const getSitemap = async (url: string): Promise<getSitemapResponse> => {
+  const fixedURL = fixNakedURL(url);
+  let response: getSitemapResponse = {
+    url: fixedURL,
+    error: true,
+  };
+
+  return Promise.resolve(fixedURL)
+    .then(isValidSitemap)
+    .then(async (check) => {
+      if (check.fetchError) {
+        throw new Error("url not valid");
+      }
+      if (check.isValidXML) {
+        return { url: fixedURL, error: false };
+      }
+
+      if (!check.isValidXML) {
+        for await (const res of findSitemap(fixedURL)) {
+          if (res?.isValidXML) {
+            return { url: res.url, error: false };
+          }
+        }
+      }
+      return response;
+    });
+};

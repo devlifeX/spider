@@ -16,3 +16,12 @@ export interface SitemapMain {
 export interface SitemapResponse {
   url: string;
 }
+
+export interface isValidSitemapResponse {
+  fetchError: boolean;
+  isValidXML: boolean;
+}
+
+export interface MyURL {
+  url: string;
+}

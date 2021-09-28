@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/app.ts",
   "scripts": {
-    "test": "jest --silent=false",
+    "test": "jest",
+    "test:debug": "jest --silent=false --detectOpenHandles",
     "lint:fix": "tsc --noEmit && eslint '*/**/*.{js,ts}' --fix",
     "start": "node ./dist/app.js",
     "dev": "nodemon",
