@@ -16,6 +16,19 @@ const fakeURL = "test";
 const username = "dariush";
 const password = "dariush";
 
+test("Main with basic Auth and regular url", async () => {
+  const results = await main({
+    baseURL: BasicAuthURL,
+    basicAuth: {
+      hasBasicAuth: true,
+      basicAuthPassword: password,
+      basicAuthUsername: username,
+    },
+  });
+
+  expect(results.length).toBe(2);
+});
+
 test("It should throw error", async () => {
   try {
     const result = await getSitemap(fakeURL);

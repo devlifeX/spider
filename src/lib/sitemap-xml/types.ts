@@ -15,6 +15,7 @@ export interface SitemapMain {
 
 export interface SitemapResponse {
   url: string;
+  lastmod: string;
 }
 
 export interface isValidSitemapResponse {
@@ -24,4 +25,11 @@ export interface isValidSitemapResponse {
 
 export interface MyURL {
   url: string;
+}
+export interface getSitemapResponse {
+  url: string;
+  error?: boolean;
+}
+export interface fetchXMLOption {
+  basicAuth?: BasicAuthProps;
 }

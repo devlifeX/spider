@@ -4,19 +4,39 @@ import axios from "axios";
 import fs from "fs";
 import { splitEvery, flatten } from "ramda";
 
-import { SitemapMain, SitemapResponse, isValidSitemapResponse } from "./types";
+import {
+  SitemapMain,
+  SitemapResponse,
+  isValidSitemapResponse,
+  fetchXMLOption,
+  getSitemapResponse,
+} from "./types";
 
-export function fetchXML(url: SitemapResponse | string): Promise<string> {
+export function fetchXML(
+  url: SitemapResponse | string,
+  option?: fetchXMLOption
+): Promise<string> {
   const finalURL = typeof url === "string" ? url : url.url;
+  let axiosOptions = {};
+
+  if (option?.basicAuth?.hasBasicAuth) {
+    axiosOptions = {
+      auth: {
+        username: option.basicAuth.basicAuthUsername,
+        password: option.basicAuth.basicAuthPassword,
+      },
+    };
+  }
+
   return axios
-    .get(finalURL, { timeout: 5000 })
+    .get(finalURL, { timeout: 5000, ...axiosOptions })
     .then((res) => res.data)
     .catch((err) => "");
 }
 
-function* xmlLoader(urls: SitemapResponse[][]) {
+function* xmlLoader(urls: SitemapResponse[][], option?: fetchXMLOption) {
   for (const urlPack of urls) {
-    yield urlPack.map((url) => axios(url.url).then((res) => res.data));
+    yield urlPack.map((url) => fetchXML(url, option));
   }
 }
 
@@ -31,10 +51,11 @@ function extractUrls(xml): SitemapResponse[] {
     const urls: SitemapResponse[] = [];
     const $ = cheerio.load(xml, { xmlMode: true });
 
-    $("loc").each(function (_, v) {
-      const url = $(v).text();
+    $("sitemap, url").each(function (_, v) {
+      const url = $(v).find("loc").text();
+      const lastmod = $(v).find("lastmod").text();
 
-      urls.push({ url });
+      urls.push({ url, lastmod });
     });
 
     return urls;
@@ -106,7 +127,7 @@ export async function main({
     callbackOnEachItemFetched && callbackOnEachItemFetched(props);
 
   if (baseURL) {
-    xml = await fetchXML(baseURL);
+    xml = await fetchXML(baseURL, { basicAuth });
   } else {
     xml = sitemapContent;
   }
@@ -127,7 +148,7 @@ export async function main({
 
   let splitedIndex = 1;
   let tmp = [];
-  for (const result of xmlLoader(splited)) {
+  for (const result of xmlLoader(splited, { basicAuth })) {
     const feed = await Promise.all(result);
     const newURLs = feed.map((i) => extractUrls(i));
     tmp.push(newURLs);
@@ -141,6 +162,7 @@ export async function main({
 
     splitedIndex++;
   }
+
   output = flatten(tmp);
   output = [...XMLURL, ...notXMLURL, ...output];
 
@@ -186,10 +208,6 @@ export const fixNakedURL = (url: string) => {
   return url;
 };
 
-interface getSitemapResponse {
-  url: string;
-  error?: boolean;
-}
 export const getSitemap = async (url: string): Promise<getSitemapResponse> => {
   const fixedURL = fixNakedURL(url);
   let response: getSitemapResponse = {
