@@ -238,10 +238,17 @@ export const getSitemap = async (url: string): Promise<getSitemapResponse> => {
 };
 
 export const sitemapTimerHandler = (obj: SitemapResponse): SitemapResponse => {
-  moment.locale("fa");
-  const relativeTime = moment(obj.lastmod).fromNow();
-  return {
-    ...obj,
-    relativeTime,
-  };
+  if (obj?.lastmod) {
+    moment.locale("fa");
+    const relativeTime = moment(obj.lastmod).fromNow();
+    return {
+      ...obj,
+      relativeTime,
+    };
+  } else {
+    return {
+      ...obj,
+      relativeTime: "نامشخص",
+    };
+  }
 };
