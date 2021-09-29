@@ -53,7 +53,7 @@ function extractUrls(xml): SitemapResponse[] {
     const $ = cheerio.load(xml, { xmlMode: true });
 
     $("sitemap, url").each(function (_, v) {
-      const url = $(v).find("loc").text();
+      const url = decodeURI($(v).find("loc").text());
       const lastmod = $(v).find("lastmod").text();
 
       urls.push(sitemapTimerHandler({ url, lastmod }));
