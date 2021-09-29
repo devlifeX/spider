@@ -22,9 +22,9 @@ connectToDb(config.connectionString).then(() => {
       methods: ["GET", "POST"],
     },
   });
+  socketConnect(io);
   httpServer.listen(config.port, () => {
     console.log(`Socket listening on the port ${config.port}`);
-    socketConnect(io);
   });
 
   registerRoutes(app);

@@ -30,7 +30,7 @@ export function fetchXML(
   }
 
   return axios
-    .get(finalURL, { timeout: 5000, ...axiosOptions })
+    .get(finalURL, { timeout: 30000, ...axiosOptions })
     .then((res) => res.data)
     .catch((err) => "");
 }
@@ -113,6 +113,13 @@ function isURL(str) {
   }
 }
 
+const sitemapMetaExtractor = (url) => {
+  return [
+    { key: "آدرس سایت", value: new URL(url).origin, type: "link" },
+    { key: "آدرس سایت‌مپ", value: url, type: "link" },
+  ];
+};
+
 export async function main({
   baseURL,
   sitemapContent,
@@ -145,6 +152,7 @@ export async function main({
     total: splited.length,
     urls: [...XMLURL, ...notXMLURL],
     done: false,
+    meta: sitemapMetaExtractor(baseURL),
   });
 
   let splitedIndex = 1;

@@ -40,4 +40,5 @@ export interface progressbarUpdaterSitemapProps {
   total: number;
   urls: string[];
   done: boolean;
+  meta?: [];
 }
