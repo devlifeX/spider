@@ -26,7 +26,7 @@ export const getSitemapController = (socket, props: getSitemapRequest): any => {
     "basicAuth",
   ])(props) as getSitemapRequest;
 
-  getSitemap(url)
+  getSitemap(url, { basicAuth })
     .then(({ url: baseURL, error }) =>
       main({
         isDuplicate,

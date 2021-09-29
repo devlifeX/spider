@@ -83,7 +83,8 @@ async function saveOutput(urlsArray: SitemapResponse[], filename) {
 }
 
 export const isValidSitemap = (
-  url: SitemapResponse | string
+  url: SitemapResponse | string,
+  option?: fetchXMLOption
 ): Promise<isValidSitemapResponse> => {
   const finalURL = typeof url === "string" ? url : url.url;
   let response: isValidSitemapResponse = {
@@ -91,7 +92,7 @@ export const isValidSitemap = (
     isValidXML: false,
   };
 
-  return fetchXML(finalURL)
+  return fetchXML(finalURL, option)
     .then((str) => {
       if (str.length <= 0) return response;
       return {
@@ -217,7 +218,10 @@ export const fixNakedURL = (url: string) => {
   return url;
 };
 
-export const getSitemap = async (url: string): Promise<getSitemapResponse> => {
+export const getSitemap = async (
+  url: string,
+  option?: fetchXMLOption
+): Promise<getSitemapResponse> => {
   const fixedURL = fixNakedURL(url);
   let response: getSitemapResponse = {
     url: fixedURL,
@@ -225,7 +229,7 @@ export const getSitemap = async (url: string): Promise<getSitemapResponse> => {
   };
 
   return Promise.resolve(fixedURL)
-    .then(isValidSitemap)
+    .then((url) => isValidSitemap(url, option))
     .then(async (check) => {
       if (check.fetchError) {
         throw new Error("url not valid");
