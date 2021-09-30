@@ -152,7 +152,7 @@ export async function main({
     index: 0,
     total: splited.length,
     urls: [...XMLURL, ...notXMLURL],
-    done: false,
+    done: splited.length <= 0,
     meta: sitemapMetaExtractor(baseURL),
   });
 
