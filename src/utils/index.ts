@@ -42,7 +42,7 @@ export const sitemapFullPath = (url) => {
   return fullPath;
 };
 
-export const isValidateURL = (url: any): boolean => {
+export const isValidURL = (url: any): boolean => {
   if (Number(url) == url || R.isNil(url)) {
     return false;
   }

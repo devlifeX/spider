@@ -4,13 +4,14 @@ import axios from "axios";
 import fs from "fs";
 import moment from "moment";
 import R, { splitEvery, flatten } from "ramda";
-
+import { isValidURL } from "../../utils";
 import {
   SitemapMain,
   SitemapResponse,
   isValidSitemapResponse,
   fetchXMLOption,
   getSitemapResponse,
+  RobotTXTReturnType,
 } from "./types";
 
 export function fetchXML(
@@ -212,37 +213,41 @@ async function* findSitemap(
   }
 }
 
+const fullURL = (url) => {
+  let outputURL = url;
+  let urlObject = new URL(url);
+  if (!urlObject.pathname.includes(".xml")) {
+    outputURL = `${urlObject.origin}/sitemap.xml`;
+  }
+
+  return outputURL;
+};
+
+const httpsURL = (url) => {
+  if (!url.includes("http")) {
+    return `https://${url}`;
+  }
+  return url;
+};
+const sanitize = R.compose(R.toLower, R.trim);
+
 export const fixNakedURL = (url: any) => {
   if (Number(url) == url || R.isNil(url)) {
     return undefined;
   }
+  const fix = R.pipe(sanitize, httpsURL, fullURL);
+  const finalURL = R.tryCatch(fix, R.empty);
+  return finalURL(url);
+  /* 
+  const fix = R.pipe(sanitize, httpsURL, fullURL);
 
-  const sanitize = R.compose(R.toLower, R.trim);
-  const fullURL = (url) => {
-    let outputURL = url;
-    let urlObject = new URL(url);
-    if (!urlObject.pathname.includes(".xml")) {
-      outputURL = `${urlObject.origin}/sitemap.xml`;
-    }
-
-    return outputURL;
-  };
-
-  const httpsURL = (url) => () => {
-    if (!url.includes("http")) {
-      return `https://${url}`;
-    }
-    return url;
-  };
-
-  const fix = R.compose(sanitize, fullURL);
-  const firstFix = R.tryCatch(fix, httpsURL(sanitize(url)));
+  const firstFix = R.tryCatch(fix, httpsURL);
 
   const finalURL = firstFix(url);
 
   const finalResult = R.tryCatch(fullURL, R.empty);
 
-  return finalResult(finalURL);
+  return finalResult(finalURL); */
 };
 
 export const getSitemap = async (
@@ -290,4 +295,53 @@ export const sitemapTimerHandler = (obj: SitemapResponse): SitemapResponse => {
       relativeTime: "نامشخص",
     };
   }
+};
+
+export const getSitemapFromRobotstxt = (
+  url: string,
+  option?: fetchXMLOption
+): Promise<RobotTXTReturnType> => {
+  const output: RobotTXTReturnType = {
+    url,
+    hasError: true,
+    errorMessage: "Robots.txt پیدا نشد",
+  };
+  if (!isValidURL(url)) return Promise.resolve(output);
+
+  const createRobotsUrl = (url: string) => {
+    return `${new URL(url).origin}/robots.txt`;
+  };
+
+  const actions = R.compose(createRobotsUrl, httpsURL);
+
+  const firstFix = R.tryCatch(actions, () => undefined);
+
+  const fixedURL = firstFix(url);
+
+  if (!fixedURL) return Promise.resolve(output);
+  const robotsParser = (str) => {
+    return str
+      .toLowerCase()
+      .split("\n")
+      .reduce((acc, i) => {
+        if (i.includes("sitemap")) {
+          acc.push(i.split("sitemap:")[1].trim());
+        }
+        return acc;
+      }, []);
+  };
+  return Promise.resolve(fixedURL)
+    .then((url) => fetchXML(url, option))
+    .then(robotsParser)
+    .then((res) => {
+      let outputURL = url;
+      if (res.length > 0) {
+        outputURL = res[0];
+      }
+      return {
+        url: outputURL,
+        hasError: res.length <= 0,
+        errorMessage: res.length <= 0 ? "Robots.txt پیدا نشد" : "",
+      };
+    });
 };

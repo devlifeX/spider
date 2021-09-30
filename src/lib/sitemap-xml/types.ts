@@ -36,3 +36,9 @@ export interface getSitemapResponse {
 export interface fetchXMLOption {
   basicAuth?: BasicAuthProps;
 }
+
+export interface RobotTXTReturnType {
+  url: string;
+  hasError: boolean;
+  errorMessage?: string;
+}

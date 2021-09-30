@@ -4,6 +4,7 @@ import {
   isValidSitemap,
   getSitemap,
   sitemapTimerHandler,
+  getSitemapFromRobotstxt,
 } from "./index";
 
 jest.setTimeout(30000);
@@ -15,6 +16,16 @@ const NakedURL = "devlife.ir/site.xml";
 const fakeURL = "test";
 const username = "dariush";
 const password = "dariush";
+
+test("Get sitemap from robots.txt", async () => {
+  const success = await getSitemapFromRobotstxt("letsgouni.com");
+  // const re = await getSitemapFromRobotstxt("rade.ir");
+  // const failed = await getSitemapFromRobotstxt("vizzzzz.com");
+  const failed = await getSitemapFromRobotstxt(domain);
+
+  expect(success.hasError).toBe(false);
+  expect(failed.hasError).toBe(true);
+});
 
 test("Add moment to lastmod", async () => {
   const results = await main({

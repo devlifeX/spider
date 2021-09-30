@@ -1,16 +1,16 @@
-import { isValidateURL } from "../src/utils";
+import { isValidURL } from "../src/utils";
 
-test("isValidateURL", () => {
-  expect(isValidateURL("https://devlife.ir")).toBe(true);
-  expect(isValidateURL("devlife.ir")).toBe(true);
-  expect(isValidateURL("devlife.ir/sitemap.xml")).toBe(true);
+test("isValidURL", () => {
+  expect(isValidURL("https://devlife.ir")).toBe(true);
+  expect(isValidURL("devlife.ir")).toBe(true);
+  expect(isValidURL("devlife.ir/sitemap.xml")).toBe(true);
 
-  expect(isValidateURL("")).toBe(false);
-  expect(isValidateURL(22)).toBe(false);
-  expect(isValidateURL("22")).toBe(false);
-  expect(isValidateURL("fhsdjhfjk")).toBe(false);
-  expect(isValidateURL([])).toBe(false);
-  expect(isValidateURL({})).toBe(false);
-  expect(isValidateURL(null)).toBe(false);
-  expect(isValidateURL(undefined)).toBe(false);
+  expect(isValidURL("")).toBe(false);
+  expect(isValidURL(22)).toBe(false);
+  expect(isValidURL("22")).toBe(false);
+  expect(isValidURL("fhsdjhfjk")).toBe(false);
+  expect(isValidURL([])).toBe(false);
+  expect(isValidURL({})).toBe(false);
+  expect(isValidURL(null)).toBe(false);
+  expect(isValidURL(undefined)).toBe(false);
 });
