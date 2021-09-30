@@ -238,16 +238,6 @@ export const fixNakedURL = (url: any) => {
   const fix = R.pipe(sanitize, httpsURL, fullURL);
   const finalURL = R.tryCatch(fix, R.empty);
   return finalURL(url);
-  /* 
-  const fix = R.pipe(sanitize, httpsURL, fullURL);
-
-  const firstFix = R.tryCatch(fix, httpsURL);
-
-  const finalURL = firstFix(url);
-
-  const finalResult = R.tryCatch(fullURL, R.empty);
-
-  return finalResult(finalURL); */
 };
 
 export const getSitemap = async (
