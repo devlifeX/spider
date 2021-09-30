@@ -38,6 +38,6 @@ export const getSitemapController = (socket, props: getSitemapRequest): any => {
     .catch((err) => {
       console.log(err);
 
-      socket.emit("sitemap", { error: { message: "URL issue", err } });
+      socket.emit("sitemap", { error: { message: err.message, err } });
     });
 };

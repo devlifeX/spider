@@ -214,7 +214,7 @@ export const fixNakedURL = (url: any) => {
   const sanitize = R.compose(R.toLower, R.trim);
 
   if (Number(url) == url || R.isNil(sanitize(url))) {
-    return undefined;
+    throw new Error("لینک وارد شده صحیح نیست");
   }
 
   const fullURL = (url) => {
@@ -258,7 +258,7 @@ export const getSitemap = async (
     .then((url) => isValidSitemap(url, option))
     .then(async (check) => {
       if (check.fetchError) {
-        throw new Error("url not valid");
+        throw new Error("لینک وارد شده صحیح نیست");
       }
       if (check.isValidXML) {
         return { url: fixedURL, error: false };
