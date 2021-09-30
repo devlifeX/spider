@@ -213,12 +213,11 @@ async function* findSitemap(
 }
 
 export const fixNakedURL = (url: any) => {
-  const sanitize = R.compose(R.toLower, R.trim);
-
-  if (Number(url) == url || R.isNil(sanitize(url))) {
-    throw new Error("لینک وارد شده صحیح نیست");
+  if (Number(url) == url || R.isNil(url)) {
+    return undefined;
   }
 
+  const sanitize = R.compose(R.toLower, R.trim);
   const fullURL = (url) => {
     let outputURL = url;
     let urlObject = new URL(url);

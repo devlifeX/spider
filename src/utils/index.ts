@@ -2,6 +2,7 @@ import translate from "../locale";
 import bcrypt from "bcrypt";
 import path from "path";
 import fs from "fs";
+import R from "ramda";
 export * from "ramda";
 
 export const hashPassword = (password: string): string => {
@@ -39,4 +40,38 @@ export const sitemapFullPath = (url) => {
   const fullPath = `${dir}/${_url.hostname}/`;
   if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath);
   return fullPath;
+};
+
+export const isValidateURL = (url: any): boolean => {
+  if (Number(url) == url || R.isNil(url)) {
+    return false;
+  }
+
+  if (!url.toString().includes(".")) {
+    return false;
+  }
+
+  const sanitize = R.compose(R.toLower, R.trim);
+
+  const httpsURL = (url: string) => {
+    if (!url.includes("http")) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
+  const isURL = (str: string) => {
+    try {
+      const myURL = new URL(str);
+      if (myURL.href) {
+        return true;
+      } else return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const test = R.pipe(sanitize, httpsURL, isURL);
+  const isValid = R.tryCatch(test, () => false);
+  return isValid(url);
 };
