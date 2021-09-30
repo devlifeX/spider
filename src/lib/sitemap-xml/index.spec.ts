@@ -64,14 +64,6 @@ test("Get sitemap from naked url", async () => {
   expect(result.url).toBe(noBasicAuthURL);
 });
 
-test("Fix naked url", () => {
-  const result = fixNakedURL(NakedURL);
-  expect(result).toBe(noBasicAuthURL);
-
-  const resultDomain = fixNakedURL(domain);
-  expect(resultDomain).toBe(`https://${domain}`);
-});
-
 test("Main with NO basic Auth and regular url", async () => {
   const results = await main({
     baseURL: noBasicAuthURL,
@@ -83,4 +75,28 @@ test("Get sitemap from fake url", async () => {
   const result = await isValidSitemap(fakeURL);
   expect(result.fetchError).toBe(true);
   expect(result.isValidXML).toBe(false);
+});
+
+test("fixNakedURL", () => {
+  const result = "https://devlife.ir/sitemap.xml";
+
+  expect(fixNakedURL(22)).toBe(undefined);
+  expect(fixNakedURL("https://devlife.ir")).toBe(result);
+  expect(fixNakedURL("https://devlife.ir//")).toBe(result);
+  expect(fixNakedURL("https://devlife.ir///")).toBe(result);
+  expect(fixNakedURL("https://devlife.ir/sitemap_index.xml")).toBe(
+    "https://devlife.ir/sitemap_index.xml"
+  );
+  expect(fixNakedURL("https://devlife.ir/sitemap.xml")).toBe(result);
+  expect(fixNakedURL("devlife.ir/sitemap.xml")).toBe(result);
+  expect(fixNakedURL("Devlife.ir/sitemap.xml")).toBe(result);
+  expect(fixNakedURL("DEVLIFE.IR/SITEMAP.XML")).toBe(result);
+  expect(fixNakedURL(" Devlife.Ir ")).toBe(result);
+
+  expect(fixNakedURL("http://devlife.ir/sitemap.xml")).toBe(
+    "http://devlife.ir/sitemap.xml"
+  );
+
+  expect(fixNakedURL("")).toBe(undefined);
+  expect(fixNakedURL("22")).toBe(undefined);
 });

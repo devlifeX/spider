@@ -3,7 +3,7 @@ import path from "path";
 import axios from "axios";
 import fs from "fs";
 import moment from "moment";
-import { splitEvery, flatten } from "ramda";
+import R, { splitEvery, flatten } from "ramda";
 
 import {
   SitemapMain,
@@ -210,12 +210,38 @@ async function* findSitemap(
   }
 }
 
-export const fixNakedURL = (url: string) => {
-  if (!url.includes("http")) {
-    return `https://${url}`;
+export const fixNakedURL = (url: any) => {
+  const sanitize = R.compose(R.toLower, R.trim);
+
+  if (Number(url) == url || R.isNil(sanitize(url))) {
+    return undefined;
   }
 
-  return url;
+  const fullURL = (url) => {
+    let outputURL = url;
+    let urlObject = new URL(url);
+    if (!urlObject.pathname.includes(".xml")) {
+      outputURL = `${urlObject.origin}/sitemap.xml`;
+    }
+
+    return outputURL;
+  };
+
+  const httpsURL = (url) => () => {
+    if (!url.includes("http")) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
+  const fix = R.compose(sanitize, fullURL);
+  const firstFix = R.tryCatch(fix, httpsURL(sanitize(url)));
+
+  const finalURL = firstFix(url);
+
+  const finalResult = R.tryCatch(fullURL, R.empty);
+
+  return finalResult(finalURL);
 };
 
 export const getSitemap = async (
