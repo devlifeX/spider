@@ -55,8 +55,10 @@ function extractUrls(xml): SitemapResponse[] {
     $("sitemap, url").each(function (_, v) {
       const url = decodeURI($(v).find("loc").text());
       const lastmod = $(v).find("lastmod").text();
+      const changefreq = $(v).find("changefreq").text() || "نامشخص";
+      const priority = $(v).find("priority").text() || "نامشخص";
 
-      urls.push(sitemapTimerHandler({ url, lastmod }));
+      urls.push(sitemapTimerHandler({ url, lastmod, changefreq, priority }));
     });
 
     return urls;

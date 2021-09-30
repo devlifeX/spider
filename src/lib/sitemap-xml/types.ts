@@ -16,6 +16,8 @@ export interface SitemapMain {
 export interface SitemapResponse {
   url: string;
   lastmod: string;
+  changefreq?: string;
+  priority?: string;
   relativeTime?: string;
 }
 
