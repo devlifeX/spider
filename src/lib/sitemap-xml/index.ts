@@ -95,12 +95,12 @@ export const isValidSitemap = (
     isValidXML: false,
   };
 
-  /* if (!finalURL.includes(".xml")) {
+  if (!finalURL.includes(".xml")) {
     return Promise.resolve({
       fetchError: false,
       isValidXML: false,
     });
-  } */
+  }
 
   return fetchXML(finalURL, option)
     .then((str) => {

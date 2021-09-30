@@ -42,10 +42,12 @@ test("fixNakedURL", () => {
 });
 
 test("Get sitemap from robots and naked url", async () => {
+  const failed = await getSitemap("sdghjasgdhjasgdjhgsa22.com");
   const suncces1 = await getSitemap("letsgouni.com");
   const sucess2 = await getSitemap("devlife.ir");
   expect(suncces1.hasError).toBe(false);
   expect(sucess2.hasError).toBe(false);
+  expect(failed.hasError).toBe(true);
 });
 
 test("Get sitemap from robots.txt", async () => {
