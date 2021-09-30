@@ -31,7 +31,8 @@ export interface MyURL {
 }
 export interface getSitemapResponse {
   url: string;
-  error?: boolean;
+  hasError: boolean;
+  errorMessage?: string;
 }
 export interface fetchXMLOption {
   basicAuth?: BasicAuthProps;

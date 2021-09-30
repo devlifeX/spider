@@ -27,17 +27,21 @@ export const getSitemapController = (socket, props: getSitemapRequest): any => {
   ])(props) as getSitemapRequest;
 
   getSitemap(url, { basicAuth })
-    .then(({ url: baseURL, error }) =>
-      main({
+    .then(({ url: baseURL, hasError, errorMessage }) => {
+      if (hasError) {
+        throw new Error(errorMessage);
+      }
+      return main({
         isDuplicate,
         baseURL,
         basicAuth,
         callbackOnEachItemFetched: progressbarUpdater(socket),
-      })
-    )
+      });
+    })
     .catch((err) => {
-      console.log(err);
-
-      socket.emit("sitemap", { error: { message: err.message, err } });
+      socket.emit("sitemap", {
+        hasError: true,
+        errorMessage: err.message,
+      });
     });
 };

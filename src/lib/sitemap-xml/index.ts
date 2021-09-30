@@ -95,6 +95,13 @@ export const isValidSitemap = (
     isValidXML: false,
   };
 
+  /* if (!finalURL.includes(".xml")) {
+    return Promise.resolve({
+      fetchError: false,
+      isValidXML: false,
+    });
+  } */
+
   return fetchXML(finalURL, option)
     .then((str) => {
       if (str.length <= 0) return response;
@@ -229,13 +236,14 @@ const httpsURL = (url) => {
   }
   return url;
 };
-const sanitize = R.compose(R.toLower, R.trim);
+const removeTrailingSlash = (str) => str.replace(/\/+$/g, "");
+const sanitize = R.pipe(R.toLower, R.trim, removeTrailingSlash);
 
 export const fixNakedURL = (url: any) => {
   if (Number(url) == url || R.isNil(url)) {
     return undefined;
   }
-  const fix = R.pipe(sanitize, httpsURL, fullURL);
+  const fix = R.pipe(sanitize, httpsURL);
   const finalURL = R.tryCatch(fix, R.empty);
   return finalURL(url);
 };
@@ -244,26 +252,35 @@ export const getSitemap = async (
   url: string,
   option?: fetchXMLOption
 ): Promise<getSitemapResponse> => {
-  const fixedURL = fixNakedURL(url);
   let response: getSitemapResponse = {
-    url: fixedURL,
-    error: true,
+    url,
+    hasError: true,
+    errorMessage: "هیچ سایت‌مپی پیدا نشد!",
   };
+  const fixedURL = fixNakedURL(url);
 
   return Promise.resolve(fixedURL)
     .then((url) => isValidSitemap(url, option))
     .then(async (check) => {
       if (check.fetchError) {
-        throw new Error("لینک وارد شده صحیح نیست");
+        return { ...response, errorMessage: "سایت در دسترس نیست" };
       }
+
       if (check.isValidXML) {
-        return { url: fixedURL, error: false };
+        return { url: fixedURL, hasError: false };
+      }
+
+      if (!check.isValidXML) {
+        const robots = await getSitemapFromRobotstxt(url, option);
+        if (!robots.hasError) {
+          return { url: robots.url, hasError: false };
+        }
       }
 
       if (!check.isValidXML) {
         for await (const res of findSitemap(fixedURL)) {
           if (res?.isValidXML) {
-            return { url: res.url, error: false };
+            return { url: res.url, hasError: false };
           }
         }
       }

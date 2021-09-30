@@ -17,6 +17,37 @@ const fakeURL = "test";
 const username = "dariush";
 const password = "dariush";
 
+test("fixNakedURL", () => {
+  const result = "https://devlife.ir";
+  const fullURL = "https://devlife.ir/sitemap.xml";
+  const fullURLHTTP = "http://devlife.ir/sitemap.xml";
+
+  expect(fixNakedURL(22)).toBe(undefined);
+  expect(fixNakedURL("https://devlife.ir")).toBe(result);
+  expect(fixNakedURL("https://devlife.ir//")).toBe(result);
+  expect(fixNakedURL("https://devlife.ir///")).toBe(result);
+  expect(fixNakedURL("https://devlife.ir/sitemap_index.xml")).toBe(
+    "https://devlife.ir/sitemap_index.xml"
+  );
+  expect(fixNakedURL("https://devlife.ir/sitemap.xml")).toBe(fullURL);
+  expect(fixNakedURL("devlife.ir/sitemap.xml")).toBe(fullURL);
+  expect(fixNakedURL("Devlife.ir/sitemap.xml")).toBe(fullURL);
+  expect(fixNakedURL("DEVLIFE.IR/SITEMAP.XML")).toBe(fullURL);
+  expect(fixNakedURL(" Devlife.Ir ")).toBe(result);
+
+  expect(fixNakedURL("http://devlife.ir/sitemap.xml")).toBe(fullURLHTTP);
+
+  expect(fixNakedURL("")).toBe(undefined);
+  expect(fixNakedURL("22")).toBe(undefined);
+});
+
+test("Get sitemap from robots and naked url", async () => {
+  const suncces1 = await getSitemap("letsgouni.com");
+  const sucess2 = await getSitemap("devlife.ir");
+  expect(suncces1.hasError).toBe(false);
+  expect(sucess2.hasError).toBe(false);
+});
+
 test("Get sitemap from robots.txt", async () => {
   const success = await getSitemapFromRobotstxt("letsgouni.com");
   // const re = await getSitemapFromRobotstxt("rade.ir");
@@ -86,28 +117,4 @@ test("Get sitemap from fake url", async () => {
   const result = await isValidSitemap(fakeURL);
   expect(result.fetchError).toBe(true);
   expect(result.isValidXML).toBe(false);
-});
-
-test("fixNakedURL", () => {
-  const result = "https://devlife.ir/sitemap.xml";
-
-  expect(fixNakedURL(22)).toBe(undefined);
-  expect(fixNakedURL("https://devlife.ir")).toBe(result);
-  expect(fixNakedURL("https://devlife.ir//")).toBe(result);
-  expect(fixNakedURL("https://devlife.ir///")).toBe(result);
-  expect(fixNakedURL("https://devlife.ir/sitemap_index.xml")).toBe(
-    "https://devlife.ir/sitemap_index.xml"
-  );
-  expect(fixNakedURL("https://devlife.ir/sitemap.xml")).toBe(result);
-  expect(fixNakedURL("devlife.ir/sitemap.xml")).toBe(result);
-  expect(fixNakedURL("Devlife.ir/sitemap.xml")).toBe(result);
-  expect(fixNakedURL("DEVLIFE.IR/SITEMAP.XML")).toBe(result);
-  expect(fixNakedURL(" Devlife.Ir ")).toBe(result);
-
-  expect(fixNakedURL("http://devlife.ir/sitemap.xml")).toBe(
-    "http://devlife.ir/sitemap.xml"
-  );
-
-  expect(fixNakedURL("")).toBe(undefined);
-  expect(fixNakedURL("22")).toBe(undefined);
 });
