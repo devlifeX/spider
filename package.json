@@ -15,9 +15,6 @@
     "_build": "npm run clean && webpack --stats --mode production --color --progress",
     "old_dev": "TS_NODE_FILES=true TS_NODE_TRANSPILE_ONLY=true nodemon --watch './**/*.ts' --exec 'ts-node' src/app.ts"
   },
-  "pre-commit": [
-    "lint"
-  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
